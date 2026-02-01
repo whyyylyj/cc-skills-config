@@ -33,6 +33,18 @@ categories:
         - "一键配置 MCP MySQL 连接"
       external_repo: "https://github.com/yourusername/mysql-mcp-setup"
 
+    - id: "contribute"
+      name: "Contribute Config"
+      description: "将本地 Claude Code 配置整理成可分享的安装脚本。支持导出 skills, MCP 服务器, commands, hooks，自动过滤敏感信息，检测重复配置。"
+      path: "skills/contribute/skill.md"
+      platforms: ["all"]
+      dependencies: []
+      features:
+        - "自动扫描已安装配置"
+        - "敏感信息过滤"
+        - "重复配置检测"
+        - "生成完整安装包"
+
   mcp:
     - id: "mysql"
       name: "MySQL MCP Server"
@@ -40,6 +52,25 @@ categories:
       path: "mcp/mysql/"
       platforms: ["linux", "macos", "windows"]
       install_script: "mcp/mysql/install.sh"
+
+    - id: "tavily"
+      name: "Tavily MCP Server"
+      description: "Tavily AI 驱动的网络搜索和问答工具，支持实时搜索、深度研究和智能问答"
+      path: "mcp/tavily/"
+      platforms: ["linux", "macos", "windows"]
+      install_script: "mcp/tavily/install.py"
+      docs_url: "https://docs.tavily.com/"
+      signup_url: "https://www.tavily.com/"
+      requires_python: true
+
+  aliases:
+    - id: "claude-dsp"
+      name: "Claude DSP Alias"
+      description: "Claude Code 快捷别名，跳过权限检查以提供更流畅的开发体验"
+      path: "alias/claude-dsp/"
+      platforms: ["linux", "macos", "windows"]
+      install_script: "alias/claude-dsp/install.sh"
+      warning: "仅用于信任的开发环境，会跳过文件操作和命令执行的权限确认"
 
   commands:
     - id: "commit"
