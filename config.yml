@@ -1,0 +1,56 @@
+project:
+  name: "Claude Code Configs"
+  version: "1.0.0"
+  description: "常用 Claude Code 配置分享仓库"
+  repository: "https://github.com/your-username/claude-configs"
+
+categories:
+  skills:
+    - id: "config-installer"
+      name: "Config Installer"
+      description: "从 Git 仓库安装 Claude Code 配置"
+      path: "skills/config-installer/skill.md"
+      platforms: ["all"]
+      dependencies: []
+
+    - id: "java-e2e"
+      name: "Java E2E Testing"
+      description: "Java/Spring Boot 端到端测试工具"
+      path: "skills/java-e2e/skill.md"
+      platforms: ["all"]
+      dependencies: []
+
+    - id: "mysql-mcp-setup"
+      name: "MySQL MCP Setup"
+      description: "自动检测项目数据库配置并设置 MCP MySQL 连接。支持 Spring Boot, Node.js, Python, Go, PHP, Ruby 等多种项目类型。"
+      path: "skills/mysql-mcp-setup/skill.md"
+      platforms: ["all"]
+      dependencies: []
+      features:
+        - "智能项目类型检测"
+        - "自动解析数据库配置"
+        - "支持多种配置格式"
+        - "一键配置 MCP MySQL 连接"
+      external_repo: "https://github.com/yourusername/mysql-mcp-setup"
+
+  mcp:
+    - id: "mysql"
+      name: "MySQL MCP Server"
+      description: "MySQL 数据库连接和管理工具"
+      path: "mcp/mysql/"
+      platforms: ["linux", "macos", "windows"]
+      install_script: "mcp/mysql/install.sh"
+
+  commands:
+    - id: "commit"
+      name: "Smart Commit"
+      description: "智能 Git 提交命令，使用 AI 生成提交信息"
+      path: "commands/commit/command.md"
+      platforms: ["all"]
+
+  hooks:
+    - id: "user-prompt-submit"
+      name: "User Prompt Hook"
+      description: "用户提交前的处理钩子，验证和增强提示"
+      path: "hooks/user-prompt-submit/hook.sh"
+      platforms: ["all"]
