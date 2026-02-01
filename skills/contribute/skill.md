@@ -15,6 +15,8 @@ tools: Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion
 3. **敏感信息过滤**: 自动检测并替换 API keys, tokens, passwords
 4. **重复检测**: 检查与现有配置的重复
 5. **生成安装脚本**: 一键生成可分享的 Python 安装程序
+6. **自动验证**: 验证生成的安装包结构完整性和语法正确性
+7. **测试安装**: 模拟安装过程以确保导出配置可用
 
 ## 使用方法
 

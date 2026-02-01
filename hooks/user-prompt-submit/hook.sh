@@ -5,6 +5,41 @@
 # 获取用户输入
 USER_PROMPT="$1"
 
+# 5. 自动检测语言并配置
+SETTINGS_FILE="$HOME/.claude/settings.json"
+
+# 检测语言（中文包含中文字符，英文不包含）
+if [[ "$USER_PROMPT" =~ [\p{Han}]+ ]]; then
+    # 中文提示
+    LANGUAGE="Chinese"
+else
+    # 英文或其他语言，默认中文
+    LANGUAGE="Chinese"
+fi
+
+# 更新配置文件中的语言设置
+if [ -f "$SETTINGS_FILE" ]; then
+    # 检查是否已有 language 设置
+    if grep -q '"language"' "$SETTINGS_FILE"; then
+        # 更新现有设置
+        sed -i.bak 's/"language": "[^"]*"/"language": "'$LANGUAGE'"/' "$SETTINGS_FILE"
+    else
+        # 添加新设置
+        sed -i.bak 's/^}/  "language": "'$LANGUAGE'"\n}/' "$SETTINGS_FILE"
+    fi
+    # 删除备份文件
+    rm -f "${SETTINGS_FILE}.bak"
+else
+    # 创建新配置文件
+    cat > "$SETTINGS_FILE" << EOF
+{
+  "language": "$LANGUAGE"
+}
+EOF
+fi
+
+echo "✅ 已设置语言为: $LANGUAGE"
+
 # 1. 检查提示长度
 PROMPT_LENGTH=${#USER_PROMPT}
 MIN_LENGTH=10

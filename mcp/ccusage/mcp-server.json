@@ -1,0 +1,10 @@
+{
+  "name": "ccusage",
+  "command": "npx",
+  "args": ["-y", "@ccusage/mcp@latest"],
+  "env": {
+    "CCUSAGE_MODE": "${CCUSAGE_MODE:-auto}",
+    "CCUSAGE_TRANSPORT": "${CCUSAGE_TRANSPORT:-stdio}",
+    "CCUSAGE_PORT": "${CCUSAGE_PORT:-8080}"
+  }
+}

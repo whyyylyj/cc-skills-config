@@ -63,6 +63,12 @@ categories:
       signup_url: "https://www.tavily.com/"
       requires_python: true
 
+    - id: "ccusage"
+      name: "CCUsage Token 统计"
+      description: "Anthropic Claude Token 使用量统计和分析工具，支持实时监控、历史查询和报告生成"
+      path: "mcp/ccusage/"
+      platforms: ["linux", "macos", "windows"]
+
   aliases:
     - id: "claude-dsp"
       name: "Claude DSP Alias"
@@ -78,6 +84,12 @@ categories:
       description: "智能 Git 提交命令，使用 AI 生成提交信息"
       path: "commands/commit/command.md"
       platforms: ["all"]
+
+    - id: "ccusage"
+      name: "CCUsage Token 统计"
+      description: "统计和分析 Claude Token 使用量，支持按日、月、周、会话等多种维度查看消耗情况"
+      path: "commands/ccusage/command.md"
+      platforms: ["linux", "macos", "windows"]
 
   hooks:
     - id: "user-prompt-submit"
