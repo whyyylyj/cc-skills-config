@@ -101,21 +101,21 @@ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 **Spring Boot - application.yml (多数据源支持)**:
 ```yaml
 spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/mydb
-    username: user
-    password: pass
+   datasource:
+      url: jdbc:mysql://localhost:3306/mydb
+      username: user
+      password: pass
 
-  # 多数据源示例
-  datasource1:
-    jdbc-url: jdbc:mysql://host1:3306/db1
-    username: user1
-    password: pass1
+   # 多数据源示例
+   datasource1:
+      jdbc-url: jdbc:mysql://host1:3306/db1
+      username: user1
+      password: pass1
 
-  datasource2:
-    jdbc-url: jdbc:mysql://host2:3306/db2
-    username: user2
-    password: pass2
+   datasource2:
+      jdbc-url: jdbc:mysql://host2:3306/db2
+      username: user2
+      password: pass2
 ```
 
 解析规则：
@@ -171,13 +171,13 @@ DATABASES = {
 **通用 JSON 配置**:
 ```json
 {
-  "database": {
-    "host": "localhost",
-    "port": 3306,
-    "user": "user",
-    "password": "pass",
-    "database": "mydb"
-  }
+   "database": {
+      "host": "localhost",
+      "port": 3306,
+      "user": "user",
+      "password": "pass",
+      "database": "mydb"
+   }
 }
 ```
 
@@ -209,19 +209,19 @@ DATABASES = {
 **配置结构**:
 ```json
 {
-  "mcpServers": {
-    "mysql-<project-name>-<db-name>": {
-      "command": "npx",
-      "args": ["-y", "mcp-server-mysql"],
-      "env": {
-        "MYSQL_HOST": "localhost",
-        "MYSQL_PORT": "3306",
-        "MYSQL_USER": "user",
-        "MYSQL_PASS": "password",
-        "MYSQL_DB": "database"
+   "mcpServers": {
+      "mysql-<project-name>-<db-name>": {
+         "command": "npx",
+         "args": ["-y", "mcp-server-mysql"],
+         "env": {
+            "MYSQL_HOST": "localhost",
+            "MYSQL_PORT": "3306",
+            "MYSQL_USER": "user",
+            "MYSQL_PASS": "password",
+            "MYSQL_DB": "database"
+         }
       }
-    }
-  }
+   }
 }
 ```
 
@@ -264,40 +264,40 @@ DATABASES = {
 `.mcp.json`:
 ```json
 {
-  "mcpServers": {
-    "mysql-mom-robo-mommp": {
-      "command": "npx",
-      "args": ["-y", "mcp-server-mysql"],
-      "env": {
-        "MYSQL_HOST": "sh-mom-dydb.wmcloud-qa.com",
-        "MYSQL_PORT": "3306",
-        "MYSQL_USER": "app_mommp_rw",
-        "MYSQL_PASS": "RU2rkQRwPG1p72Ion",
-        "MYSQL_DB": "mommp"
+   "mcpServers": {
+      "mysql-mom-robo-mommp": {
+         "command": "npx",
+         "args": ["-y", "mcp-server-mysql"],
+         "env": {
+            "MYSQL_HOST": "sh-mom-dydb.wmcloud-qa.com",
+            "MYSQL_PORT": "3306",
+            "MYSQL_USER": "app_mommp_rw",
+            "MYSQL_PASS": "RU2rkQRwPG1p72Ion",
+            "MYSQL_DB": "mommp"
+         }
+      },
+      "mysql-mom-robo-bigdata": {
+         "command": "npx",
+         "args": ["-y", "mcp-server-mysql"],
+         "env": {
+            "MYSQL_HOST": "db-bigdata-ro.wmcloud.com",
+            "MYSQL_PORT": "3312",
+            "MYSQL_USER": "app_momrobo_ro",
+            "MYSQL_PASS": "password",
+            "MYSQL_DB": "bigdata"
+         }
       }
-    },
-    "mysql-mom-robo-bigdata": {
-      "command": "npx",
-      "args": ["-y", "mcp-server-mysql"],
-      "env": {
-        "MYSQL_HOST": "db-bigdata-ro.wmcloud.com",
-        "MYSQL_PORT": "3312",
-        "MYSQL_USER": "app_momrobo_ro",
-        "MYSQL_PASS": "password",
-        "MYSQL_DB": "bigdata"
-      }
-    }
-  }
+   }
 }
 ```
 
 `.claude/settings.local.json`:
 ```json
 {
-  "permissions": {
-    "allow": ["*"]
-  },
-  "enableAllProjectMcpServers": true
+   "permissions": {
+      "allow": ["*"]
+   },
+   "enableAllProjectMcpServers": true
 }
 ```
 
@@ -530,7 +530,7 @@ with open('.mcp.json', 'w') as f:
 ### 关键实现技巧
 
 1. **文件查找模式**:
-   - 使用 `Glob` 巯找多个模式：`**/application*.properties`, `**/.env`
+   - 使用 `Glob` 查找多个模式：`**/application*.properties`, `**/.env`, `**/init_configs/*.yml`
    - 支持递归搜索子目录
 
 2. **配置解析**:
@@ -551,6 +551,15 @@ with open('.mcp.json', 'w') as f:
    - 如果必需参数缺失，提示用户手动配置
    - 如果配置文件格式错误，显示具体的错误位置
 
+### 关键配置验证 (基于实际经验)
+
+**⚠️ 必须验证的配置项**:
+
+1. **npm 包名**: 必须是 `mcp-server-mysql`，不是 `@modelcontextprotocol/server-mysql`
+2. **环境变量名**: 必须使用 `MYSQL_PASS` 和 `MYSQL_DB`，不是 `MYSQL_PASSWORD` 和 `MYSQL_DATABASE`
+3. **配置文件位置**: 必须是项目根目录的 `.mcp.json`，不是 `~/.claude/mcp_servers/`
+4. **settings 配置**: 必须在 `.claude/settings.local.json` 中设置 `enableAllProjectMcpServers: true`
+
 ### 安全考虑
 
 1. **密码保护**:
@@ -564,47 +573,162 @@ with open('.mcp.json', 'w') as f:
 
 3. **敏感信息警告**:
    - 提醒用户不要将配置文件提交到 Git
-   - 建议 `.env` 文件添加到 `.gitignore`
+   - 自动将 `.mcp.json` 和 `.claude/mcp-configs/` 添加到 `.gitignore`
 
 ## 测试验证
 
 完成配置后，可以使用以下 MCP 工具验证连接：
 
 ```bash
-# 测试连接
-mcp__mysql__test_connection
+# 验证 MCP 服务器已加载
+/mcp list
+
+# 查询数据库信息
+mcp__mysql-mom-robo-mommp__mysql_query "SELECT DATABASE(), USER(), VERSION()"
 
 # 列出所有表
-mcp__mysql__list_tables
+mcp__mysql-mom-robo-mommp__mysql_query "SHOW TABLES"
 
 # 查询表数据
-mcp__mysql__run_select_query
+mcp__mysql-mom-robo-mommp__mysql_query "SELECT COUNT(*) FROM account"
 ```
+
+**工具命名格式**: `mcp__<server-name>__<action>`
+
+示例:
+- `mcp__mysql-mom-robo-mommp__mysql_query`
+- `mcp__mysql-mom-robo-bigdata__mysql_query`
+- `mcp__mysql-mom-robo-datayesdb__mysql_query`
 
 ## 故障排查
 
 ### 常见问题
 
-**1. 配置文件未找到**:
+**1. `/mcp list` 看不到配置的 MySQL 服务器**:
+
+**检查步骤**:
+- ✅ 确认 `.mcp.json` 文件在项目根目录
+- ✅ 确认 `.claude/settings.local.json` 包含 `enableAllProjectMcpServers: true`
+- ✅ 确认 JSON 格式正确（可以使用 `jq` 或在线工具验证）
+- ✅ 完全重启 Claude Code CLI 会话
+
+**修复方法**:
+```bash
+# 检查配置文件
+cat .mcp.json
+cat .claude/settings.local.json
+
+# 验证 JSON 格式
+cat .mcp.json | jq .
+
+# 重启 Claude Code CLI
+# 完全退出当前会话，然后重新启动
+```
+
+**2. MCP 工具调用时报错 "Access denied ... (using password: NO)"**:
+
+**原因**: 环境变量名称错误，使用了 `MYSQL_PASSWORD` 而不是 `MYSQL_PASS`
+
+**修复方法**:
+```bash
+# 更新 .mcp.json 中的环境变量名
+# MYSQL_PASSWORD → MYSQL_PASS
+# MYSQL_DATABASE → MYSQL_DB
+
+python3 << 'EOF'
+import json
+
+with open('.mcp.json', 'r') as f:
+    data = json.load(f)
+
+for server_name, server_config in data.get('mcpServers', {}).items():
+    if 'env' in server_config:
+        env = server_config['env']
+        if 'MYSQL_PASSWORD' in env:
+            env['MYSQL_PASS'] = env.pop('MYSQL_PASSWORD')
+        if 'MYSQL_DATABASE' in env:
+            env['MYSQL_DB'] = env.pop('MYSQL_DATABASE')
+
+with open('.mcp.json', 'w') as f:
+    json.dump(data, f, indent=2)
+    f.write('\n')
+EOF
+```
+
+**3. npm 包不存在或 404 错误**:
+
+**原因**: 使用了错误的 npm 包名 `@modelcontextprotocol/server-mysql`
+
+**修复方法**:
+```bash
+# 更新 .mcp.json 中的 npm 包名
+# "@modelcontextprotocol/server-mysql" → "mcp-server-mysql"
+
+python3 << 'EOF'
+import json
+
+with open('.mcp.json', 'r') as f:
+    data = json.load(f)
+
+for server_name, server_config in data.get('mcpServers', {}).items():
+    if 'args' in server_config and '@modelcontextprotocol/server-mysql' in server_config['args']:
+        server_config['args'] = ["-y", "mcp-server-mysql"]
+
+with open('.mcp.json', 'w') as f:
+    json.dump(data, f, indent=2)
+    f.write('\n')
+EOF
+```
+
+**4. 数据库连接失败**:
+
+**检查步骤**:
+1. ✅ 测试网络连通性
+   ```bash
+   ping sh-mom-dydb.wmcloud-qa.com
+   ```
+
+2. ✅ 使用 Node.js 测试数据库凭据
+   ```bash
+   cd /tmp && npm install mysql2
+   node -e "
+   const mysql = require('mysql2/promise');
+   (async () => {
+     try {
+       const connection = await mysql.createConnection({
+         host: 'your-host',
+         port: 3306,
+         user: 'your-user',
+         password: 'your-password',
+         database: 'your-db'
+       });
+       console.log('✅ Connection successful!');
+       await connection.end();
+     } catch (error) {
+       console.error('❌ Connection failed:', error.message);
+     }
+   })();
+   "
+   ```
+
+3. ✅ 检查 VPN/网络环境
+   - 确保连接到正确的内网
+   - 验证防火墙设置
+
+**5. 配置文件未找到**:
 - 检查当前目录是否是项目根目录
 - 确认配置文件名称是否匹配
 - 尝试手动指定配置文件路径
 
-**2. 无法解析配置**:
+**6. 无法解析配置**:
 - 检查配置文件格式是否正确
 - 确认必需的配置项是否齐全
 - 查看配置文件是否有语法错误
 
-**3. MCP 配置写入失败**:
-- 检查 Claude Desktop 配置目录权限
+**7. MCP 配置写入失败**:
+- 检查项目目录权限
 - 确认配置文件路径是否正确
 - 尝试手动创建配置文件
-
-**4. 连接测试失败**:
-- 验证数据库是否正在运行
-- 检查数据库用户名和密码是否正确
-- 确认数据库端口是否正确
-- 测试网络连接是否正常
 
 ## 后续优化方向
 
@@ -614,4 +738,103 @@ mcp__mysql__run_select_query
 4. **连接测试**: 自动测试数据库连接是否成功
 5. **配置回滚**: 备份和恢复配置文件功能
 6. **配置验证**: 更严格的配置格式验证
-7. **批量配置**: 支持一次配置多个数据库连接
+7. **批量配置**: 支持一次配置多个数据库连接（已支持多数据源）
+
+## 参考资源
+
+- **MySQL MCP Server**: https://www.npmjs.com/package/mcp-server-mysql
+- **Claude Code MCP 文档**: https://github.com/anthropics/claude-code
+- **项目配置示例**: `.claude/MCP_MYSQL_SETUP.md` (本项目的配置记录)
+
+---
+
+**最后更新**: 2026-02-01
+**版本**: 2.1 (Claude Code CLI 优化版)
+**验证状态**: ✅ 已验证 (8个MySQL数据库配置成功)
+
+---
+
+## 实战经验总结
+
+### ✅ 成功案例 (2026-02-01)
+
+**项目**: mom-fund-research (Spring Boot Maven 多模块项目)
+
+**检测结果**:
+- 项目类型: Spring Boot (检测到 `pom.xml`)
+- 配置文件: `init_configs/application-qa.yml`
+- Git分支: `develop_qa` (自动选择对应环境的配置)
+
+**提取的数据源** (6个):
+1. **mommp** - 主业务数据库 (sh-mom-dydb.wmcloud-qa.com:3306)
+2. **datayesdb** - DataYes数据库 (db-datayesdb-ro.wmcloud.com:3313)
+3. **bigdata** - 大数据平台 (db-bigdata-ro.wmcloud.com:3312)
+4. **smartdb** - 智能数据库 (内网IP: 10.22.160.107:3390)
+5. **datapub** - 数据发布库 (db-datapub.wmcloud-stg.com:3318)
+6. **mom_ind** - 指标数据库 (sh-mom-dydb.wmcloud-qa.com:3306)
+
+**关键成功因素**:
+1. ✅ 使用正确分支的配置文件 (develop_qa → application-qa.yml)
+2. ✅ 正确识别多数据源配置 (包括自定义命名的数据源)
+3. ✅ 环境变量名称完全正确 (`MYSQL_PASS`, `MYSQL_DB`)
+4. ✅ `.gitignore` 已预先配置好相关条目
+5. ✅ `.claude/settings.local.json` 已包含 `enableAllProjectMcpServers: true`
+
+**生成的MCP服务器**:
+```
+mysql-mom-fund-research-mommp
+mysql-mom-fund-research-datayesdb
+mysql-mom-fund-research-bigdata
+mysql-mom-fund-research-smartdb
+mysql-mom-fund-research-datapub
+mysql-mom-fund-research-mom-ind
+```
+
+**用户后续操作**:
+1. 重启 Claude Code CLI 会话
+2. 运行 `/mcp list` 验证服务器加载
+3. 使用 `mcp__mysql-mom-fund-research-mommp__mysql_query "SELECT COUNT(*) FROM account"` 测试
+
+### 💡 新增经验要点
+
+1. **多环境配置文件自动选择**:
+   - 检测 Git 分支名称，优先选择匹配环境的配置文件
+   - 如 `develop_qa` 分支 → `application-qa.yml`
+   - `develop` 分支 → `application-dev.yml`
+   - `master/main` 分支 → `application-prod.yml` (如存在)
+
+2. **MCP服务器命名规范改进**:
+   - 格式: `mysql-<project-name>-<database-name>`
+   - `<project-name>` 使用 `basename $(pwd)` 获取真实项目目录名
+   - 不要使用硬编码或示例名称（如 `myapp`, `demo` 等）
+
+3. **内网IP地址支持**:
+   - 配置文件中可能包含内网IP (如 `10.22.160.107`)
+   - MCP工具完全支持IP地址作为主机名
+   - 需确保用户连接到正确的VPN/内网环境
+
+4. **配置验证清单** (新增):
+   - [ ] JSON格式正确 (`python3 -m json.tool` 验证)
+   - [ ] npm包名: `mcp-server-mysql` (不是 `@modelcontextprotocol/*`)
+   - [ ] 环境变量: `MYSQL_PASS`, `MYSQL_DB` (不是其他变体)
+   - [ ] 配置文件位置: 项目根目录 `.mcp.json`
+   - [ ] settings配置: `enableAllProjectMcpServers: true`
+   - [ ] .gitignore保护: `.mcp.json` 已添加
+
+5. **用户友好的输出格式**:
+   ```
+   ✅ MCP MySQL 配置已成功创建！
+
+   配置详情：
+   - 配置文件位置: .mcp.json
+   - 配置的服务器数量: 6
+   - 服务器列表:
+     • mysql-<project>-<db1>
+     • mysql-<project>-<db2>
+     ...
+
+   下一步：
+   1. 重启 Claude Code CLI 会话
+   2. 运行: /mcp list
+   3. 测试: mcp__mysql-<project>-<db>__mysql_query "..."
+   ```
