@@ -1,12 +1,15 @@
 ---
 name: mysql-mcp-setup
-description: 自动检测项目数据库配置并设置 MCP MySQL 连接工具。支持 Spring Boot, Node.js, Python, Go, PHP, Ruby 等多种项目类型。
+description: 自动检测项目数据库配置并设置 MCP MySQL 连接工具。支持 Spring Boot, Node.js, Python, Go, PHP, Ruby 等多种项目类型. 针对Claude Code CLI优化，已验证环境变量名称和npm包名.
 tools: Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion
+scope: project
 ---
 
-# MySQL MCP Setup Skill
+# MySQL MCP Setup Skill (Claude Code CLI 版本)
 
 自动检测项目中的数据库配置文件，并交互式地配置 MCP MySQL 连接工具。
+
+**⚠️ 重要说明**: 本技能针对 Claude Code CLI 优化，使用项目级 `.mcp.json` 配置，而非 Claude Desktop 应用配置。
 
 ## 工作流程
 
@@ -36,6 +39,7 @@ tools: Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion
 - `application.yaml`
 - `src/main/resources/application*.properties`
 - `src/main/resources/application*.yml`
+- `init_configs/application*.yml` (常见于多环境配置)
 
 **Node.js**:
 - `.env`
@@ -94,18 +98,31 @@ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 - 提取 username 和 password
 - 默认端口: 3306
 
-**Spring Boot - application.yml**:
+**Spring Boot - application.yml (多数据源支持)**:
 ```yaml
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/mydb
     username: user
     password: pass
+
+  # 多数据源示例
+  datasource1:
+    jdbc-url: jdbc:mysql://host1:3306/db1
+    username: user1
+    password: pass1
+
+  datasource2:
+    jdbc-url: jdbc:mysql://host2:3306/db2
+    username: user2
+    password: pass2
 ```
 
 解析规则：
 - 读取 YAML 内容
-- 提取 `spring.datasource.url`, `spring.datasource.username`, `spring.datasource.password`
+- 提取所有数据源配置
+- 支持多种配置格式：`spring.datasource.*`, `datasource*.*`, 自定义数据源名称
+- 为每个数据源生成独立的 MCP 服务器配置
 
 **Node.js - .env**:
 ```
@@ -119,8 +136,8 @@ DB_NAME=mydb
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
 MYSQL_USER=root
-MYSQL_PASSWORD=password
-MYSQL_DATABASE=mydb
+MYSQL_PASS=password
+MYSQL_DB=mydb
 
 DATABASE_URL=mysql://user:pass@localhost:3306/mydb
 ```
@@ -129,8 +146,8 @@ DATABASE_URL=mysql://user:pass@localhost:3306/mydb
 - 使用 `Grep` 搜索关键字：`DB_HOST`, `MYSQL_HOST`, `DATABASE_HOST`
 - 搜索端口：`DB_PORT`, `MYSQL_PORT`, `DATABASE_PORT`
 - 搜索用户名：`DB_USER`, `MYSQL_USER`, `DATABASE_USER`, `DB_USERNAME`
-- 搜索密码：`DB_PASSWORD`, `MYSQL_PASSWORD`, `DATABASE_PASSWORD`
-- 搜索数据库名：`DB_NAME`, `MYSQL_DATABASE`, `DATABASE_NAME`, `DB_DATABASE`
+- 搜索密码：`DB_PASSWORD`, `MYSQL_PASS`, `DATABASE_PASSWORD`
+- 搜索数据库名：`DB_NAME`, `MYSQL_DB`, `DATABASE_NAME`, `DB_DATABASE`
 - 解析 `DATABASE_URL` 格式: `mysql://user:pass@host:port/dbname`
 
 **Python - Django settings.py**:
@@ -179,19 +196,29 @@ DATABASES = {
 
 构建标准的 MCP MySQL 配置 JSON。
 
+**⚠️ 关键配置要点** (基于实际验证经验):
+
+1. **正确的 npm 包名**: `mcp-server-mysql` (NOT `@modelcontextprotocol/server-mysql`)
+2. **正确的环境变量名**:
+   - `MYSQL_HOST` ✓
+   - `MYSQL_PORT` ✓
+   - `MYSQL_USER` ✓
+   - `MYSQL_PASS` ✓ (NOT `MYSQL_PASSWORD`)
+   - `MYSQL_DB` ✓ (NOT `MYSQL_DATABASE`)
+
 **配置结构**:
 ```json
 {
   "mcpServers": {
-    "mysql-<project-name>": {
+    "mysql-<project-name>-<db-name>": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-mysql"],
+      "args": ["-y", "mcp-server-mysql"],
       "env": {
         "MYSQL_HOST": "localhost",
         "MYSQL_PORT": "3306",
         "MYSQL_USER": "user",
-        "MYSQL_PASSWORD": "password",
-        "MYSQL_DATABASE": "database"
+        "MYSQL_PASS": "password",
+        "MYSQL_DB": "database"
       }
     }
   }
@@ -199,91 +226,196 @@ DATABASES = {
 ```
 
 **MCP 服务器命名规则**:
-- 使用当前目录名称作为服务器名称
-- 例如：`mysql-myproject`, `mysql-blog-api`
-- 如果目录名是通用的（如 `app`, `server`），则使用 `mysql-default`
+- 基础格式: `mysql-<project-name>-<database-name>`
+- 例如：`mysql-mom-robo-mommp`, `mysql-blog-api-users`
+- 使用项目目录名 + 数据库名的组合
+- 如果配置了多个数据源，每个数据源生成独立的服务器配置
 
 执行步骤：
 - 获取当前目录名称：使用 `Bash` 执行 `basename $(pwd)`
-- 构建 MCP 服务器名称：`mysql-<dirname>`
+- 为每个数据源构建唯一的 MCP 服务器名称
 - 构建完整的 MCP 配置 JSON 对象
 - 输出配置摘要（不显示明文密码）
 
-### Phase 5: 更新配置文件
+### Phase 5: 更新 Claude Code CLI 配置文件
 
-读取现有的 Claude Desktop 配置文件，合并新的 MySQL 配置。
+**⚠️ 重要**: Claude Code CLI 使用项目根目录的 `.mcp.json` 文件，而非 Claude Desktop 的配置文件。
 
 **配置文件路径**:
-- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-- Linux: `~/.config/Claude/claude_desktop_config.json`
+- 项目根目录: `.mcp.json` (新建)
+- 项目设置: `.claude/settings.local.json` (更新)
 
 执行步骤：
-1. 检测操作系统，确定配置文件路径
-2. 使用 `Read` 读取现有配置文件（如果存在）
-3. 解析现有配置的 JSON
-4. 检查是否已存在同名 MCP 服务器配置
-5. 如果存在，询问用户是否覆盖
-6. 合并新配置到现有配置
-7. 使用 `Write` 写入更新后的配置文件
-8. 备份原配置文件（可选）
+
+1. **创建 `.mcp.json` 文件**:
+   - 在项目根目录创建 `.mcp.json`
+   - 包含所有 MySQL 数据库的 MCP 服务器配置
+   - 使用正确的 npm 包名和环境变量名
+
+2. **更新 `.claude/settings.local.json`**:
+   - 添加 `enableAllProjectMcpServers: true` 以自动启用所有项目级 MCP 服务器
+   - 或使用 `enabledMcpjsonServers` 数组指定要启用的服务器
+
+3. **更新 `.gitignore`**:
+   - 添加 `.mcp.json` 以防止敏感信息被提交到版本控制
+
+**配置文件示例**:
+
+`.mcp.json`:
+```json
+{
+  "mcpServers": {
+    "mysql-mom-robo-mommp": {
+      "command": "npx",
+      "args": ["-y", "mcp-server-mysql"],
+      "env": {
+        "MYSQL_HOST": "sh-mom-dydb.wmcloud-qa.com",
+        "MYSQL_PORT": "3306",
+        "MYSQL_USER": "app_mommp_rw",
+        "MYSQL_PASS": "RU2rkQRwPG1p72Ion",
+        "MYSQL_DB": "mommp"
+      }
+    },
+    "mysql-mom-robo-bigdata": {
+      "command": "npx",
+      "args": ["-y", "mcp-server-mysql"],
+      "env": {
+        "MYSQL_HOST": "db-bigdata-ro.wmcloud.com",
+        "MYSQL_PORT": "3312",
+        "MYSQL_USER": "app_momrobo_ro",
+        "MYSQL_PASS": "password",
+        "MYSQL_DB": "bigdata"
+      }
+    }
+  }
+}
+```
+
+`.claude/settings.local.json`:
+```json
+{
+  "permissions": {
+    "allow": ["*"]
+  },
+  "enableAllProjectMcpServers": true
+}
+```
+
+`.gitignore`:
+```
+# MCP配置文件 (包含敏感信息)
+.mcp.json
+.claude/mcp-configs/
+```
 
 **配置合并逻辑**:
 ```python
 # 伪代码示例
-existing_config = read_config_file()
-if "mysql-project" in existing_config["mcpServers"]:
-    # 询问用户是否覆盖
-    user_choice = ask_user("配置已存在，是否覆盖？", ["覆盖", "取消", "创建新名称"])
-    if user_choice == "取消":
-        return
-    elif user_choice == "创建新名称":
-        server_name = generate_unique_name()
+import json
 
-existing_config["mcpServers"][server_name] = new_mysql_config
-write_config_file(existing_config)
+# 读取现有配置
+try:
+    with open('.mcp.json', 'r') as f:
+        existing_config = json.load(f)
+except FileNotFoundError:
+    existing_config = {"mcpServers": {}}
+
+# 检查服务器是否已存在
+for server_name, server_config in new_mysql_configs.items():
+    if server_name in existing_config["mcpServers"]:
+        user_choice = ask_user(f"配置 {server_name} 已存在，是否覆盖？",
+                              ["覆盖", "跳过", "取消"])
+        if user_choice == "跳过":
+            continue
+        elif user_choice == "取消":
+            return
+
+    existing_config["mcpServers"][server_name] = server_config
+
+# 写入配置
+with open('.mcp.json', 'w') as f:
+    json.dump(existing_config, f, indent=2)
+    f.write('\n')
 ```
 
-### Phase 6: 验证和提示
+### Phase 6: 更新 .gitignore
+
+确保敏感配置文件不会被提交到版本控制系统。
+
+执行步骤：
+1. 使用 `Read` 读取现有的 `.gitignore` 文件
+2. 检查是否已包含 `.mcp.json` 和 `.claude/mcp-configs/`
+3. 如果不存在，添加到文件末尾
+4. 使用 `Edit` 或 `Write` 更新文件
+
+**添加的内容**:
+```gitignore
+# MCP配置文件 (包含敏感信息)
+.mcp.json
+.claude/mcp-configs/
+```
+
+### Phase 7: 验证和提示
 
 验证配置文件格式，并提供后续步骤提示。
 
 执行步骤：
 1. 验证 JSON 格式是否正确
 2. 验证必需字段是否齐全
-3. 输出配置摘要
-4. 提示用户重启 Claude Desktop
-5. 提供测试连接的命令
+3. 验证环境变量名称是否正确
+4. 验证 npm 包名是否正确
+5. 输出配置摘要
+6. 提示用户重启 Claude Code CLI
+7. 提供测试连接的命令
 
 **输出示例**:
 ```
 ✅ MCP MySQL 配置已成功添加！
 
 配置详情：
-- 服务器名称: mysql-myproject
-- 数据库主机: localhost
-- 数据库端口: 3306
-- 数据库名称: mydb
-- 用户名: user
+- 配置文件位置: .mcp.json
+- 配置的服务器数量: 2
+- 服务器列表:
+  • mysql-mom-robo-mommp
+  • mysql-mom-robo-bigdata
+
+数据源详情：
+1. mysql-mom-robo-mommp
+   - 数据库主机: sh-mom-dydb.wmcloud-qa.com
+   - 数据库端口: 3306
+   - 数据库名称: mommp
+   - 用户名: app_mommp_rw
+
+2. mysql-mom-robo-bigdata
+   - 数据库主机: db-bigdata-ro.wmcloud.com
+   - 数据库端口: 3312
+   - 数据库名称: bigdata
+   - 用户名: app_momrobo_ro
 
 后续步骤：
-1. 重启 Claude Desktop 应用
-2. 重启后，MCP MySQL 工具将可用
+1. 重启 Claude Code CLI 会话
+2. 重启后，使用 /mcp list 验证服务器是否加载
 3. 使用以下命令测试连接：
-   - mcp__mysql__test_connection
-   - mcp__mysql__list_tables
+   - mcp__mysql-mom-robo-mommp__mysql_query
+   - mcp__mysql-mom-robo-bigdata__mysql_query
 
 ⚠️  安全提醒：
+- .mcp.json 已添加到 .gitignore
 - 配置文件中包含明文密码，请注意保护
-- 建议使用环境变量或密钥管理工具
-- 不要将配置文件提交到版本控制系统
+- 建议使用只读账户进行查询操作
+- 定期更新数据库密码
+
+💡 常见问题：
+- 如果 /mcp list 看不到服务器，检查 enableAllProjectMcpServers 是否为 true
+- 如果连接失败，检查网络和VPN连接
+- 工具命名格式: mcp__<server-name>__<action>
 ```
 
 ## 支持的项目类型
 
 | 项目类型 | 标志性文件 | 配置文件 |
 |---------|-----------|---------|
-| Spring Boot | pom.xml, build.gradle | application.properties, application.yml |
+| Spring Boot | pom.xml, build.gradle | application.properties, application.yml, init_configs/application*.yml |
 | Node.js | package.json | .env, config.js, database.js |
 | Python Django | manage.py, settings.py | settings.py, .env |
 | Python Flask | app.py, requirements.txt | .env, config.py |
@@ -294,7 +426,7 @@ write_config_file(existing_config)
 
 ## 使用示例
 
-### 示例 1: Spring Boot 项目
+### 示例 1: Spring Boot 项目（单数据源）
 
 **用户输入**:
 ```
@@ -303,16 +435,40 @@ write_config_file(existing_config)
 
 **执行流程**:
 1. 检测到项目类型: Spring Boot
-2. 找到配置文件: `src/main/resources/application.properties`
+2. 找到配置文件: `init_configs/application-qa.yml`
 3. 提取数据库配置:
    - URL: jdbc:mysql://localhost:3306/myapp
    - Username: root
    - Password: secret
-4. 生成 MCP 配置: `mysql-myapp`
-5. 更新配置文件
-6. 输出成功提示
+4. 生成 MCP 配置: `mysql-myapp-main`
+5. 创建 `.mcp.json` 文件
+6. 更新 `.claude/settings.local.json`
+7. 更新 `.gitignore`
+8. 输出成功提示
 
-### 示例 2: Node.js 项目（多个配置文件）
+### 示例 2: Spring Boot 项目（多数据源）
+
+**用户输入**:
+```
+/mysql-mcp-setup
+```
+
+**执行流程**:
+1. 检测到项目类型: Spring Boot
+2. 找到配置文件: `init_configs/application-qa.yml`
+3. 提取多个数据源配置:
+   - 数据源1 (mommp): host1, port1, user1, pass1, db1
+   - 数据源2 (bigdata): host2, port2, user2, pass2, db2
+   - 数据源3 (datayesdb): host3, port3, user3, pass3, db3
+4. 为每个数据源生成独立的 MCP 配置:
+   - `mysql-myapp-mommp`
+   - `mysql-myapp-bigdata`
+   - `mysql-myapp-datayesdb`
+5. 创建 `.mcp.json` 文件，包含所有三个服务器配置
+6. 更新 `.claude/settings.local.json`
+7. 输出成功提示，列出所有配置的服务器
+
+### 示例 3: Node.js 项目（多个配置文件）
 
 **用户输入**:
 ```
@@ -330,7 +486,7 @@ write_config_file(existing_config)
    - 选项 3: 使用所有配置
 4. 根据用户选择继续配置...
 
-### 示例 3: 未找到配置文件
+### 示例 4: 未找到配置文件
 
 **执行流程**:
 1. 检测项目类型
@@ -340,31 +496,33 @@ write_config_file(existing_config)
 ❌ 未找到支持的数据库配置文件
 
 支持以下配置文件格式：
-- Spring Boot: application.properties, application.yml
+- Spring Boot: application.properties, application.yml, init_configs/application*.yml
 - Node.js: .env, config.js
 - Python: settings.py, .env
 - Go: config.yaml
 - 通用: database.json
 
 手动配置提示：
-如果您的配置文件使用自定义格式，请手动创建 MCP 配置：
-1. 打开 ~/Library/Application Support/Claude/claude_desktop_config.json
+如果您的配置文件使用自定义格式，请手动创建 .mcp.json 文件：
+1. 在项目根目录创建 .mcp.json
 2. 添加以下配置：
 {
   "mcpServers": {
     "mysql-your-project": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-mysql"],
+      "args": ["-y", "mcp-server-mysql"],
       "env": {
         "MYSQL_HOST": "your-host",
         "MYSQL_PORT": "3306",
         "MYSQL_USER": "your-user",
-        "MYSQL_PASSWORD": "your-password",
-        "MYSQL_DATABASE": "your-database"
+        "MYSQL_PASS": "your-password",
+        "MYSQL_DB": "your-database"
       }
     }
   }
 }
+3. 在 .claude/settings.local.json 中添加 "enableAllProjectMcpServers": true
+4. 重启 Claude Code CLI
 ```
 
 ## 实现要点

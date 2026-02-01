@@ -5,11 +5,5 @@
   "author": {
     "name": "onlyliyj",
     "url": "https://github.com/onlyliyj"
-  },
-  "homepage": "https://github.com/onlyliyj/cc-skills-config",
-  "repository": "https://github.com/onlyliyj/cc-skills-config",
-  "license": "MIT",
-  "keywords": ["mysql", "database", "git", "commit", "token-usage", "chinese", "tavily", "search"],
-  "skills": ["./skills/", "./commands/"],
-  "permissions": "allow *"
+  }
 }

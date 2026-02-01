@@ -6,22 +6,42 @@ echo "  Claude DSP Alias 安装向导"
 echo "==================================="
 echo ""
 
-# 检测当前 shell
+# 检测当前 shell - 优先检查 $SHELL 环境变量，更可靠
 CURRENT_SHELL=""
-if [ -n "$ZSH_VERSION" ]; then
-    CURRENT_SHELL="zsh"
-    SHELL_CONFIG="$HOME/.zshrc"
-elif [ -n "$BASH_VERSION" ]; then
-    CURRENT_SHELL="bash"
-    SHELL_CONFIG="$HOME/.bashrc"
-elif [ -n "$FISH_VERSION" ]; then
-    CURRENT_SHELL="fish"
-    SHELL_CONFIG="$HOME/.config/fish/config.fish"
-else
-    echo "⚠️  警告: 无法检测到支持的 Shell (zsh/bash/fish)"
-    echo "请手动添加 alias 到您的 Shell 配置文件"
-    exit 1
-fi
+SHELL_CONFIG=""
+
+# 首先检查 $SHELL 环境变量（用户的默认 shell）
+case "$SHELL" in
+    */zsh)
+        CURRENT_SHELL="zsh"
+        SHELL_CONFIG="$HOME/.zshrc"
+        ;;
+    */bash)
+        CURRENT_SHELL="bash"
+        SHELL_CONFIG="$HOME/.bashrc"
+        ;;
+    */fish)
+        CURRENT_SHELL="fish"
+        SHELL_CONFIG="$HOME/.config/fish/config.fish"
+        ;;
+    *)
+        # 如果 $SHELL 检测失败，尝试使用版本变量检测
+        if [ -n "$ZSH_VERSION" ]; then
+            CURRENT_SHELL="zsh"
+            SHELL_CONFIG="$HOME/.zshrc"
+        elif [ -n "$BASH_VERSION" ]; then
+            CURRENT_SHELL="bash"
+            SHELL_CONFIG="$HOME/.bashrc"
+        elif [ -n "$FISH_VERSION" ]; then
+            CURRENT_SHELL="fish"
+            SHELL_CONFIG="$HOME/.config/fish/config.fish"
+        else
+            echo "⚠️  警告: 无法检测到支持的 Shell (zsh/bash/fish)"
+            echo "请手动添加 alias 到您的 Shell 配置文件"
+            exit 1
+        fi
+        ;;
+esac
 
 echo "检测到 Shell: $CURRENT_SHELL"
 echo "配置文件: $SHELL_CONFIG"

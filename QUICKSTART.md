@@ -4,6 +4,14 @@
 
 ### 方式一：Claude Code Marketplace 安装（推荐）
 
+如果你已经在 `cc-skills-config` 目录中，可以直接安装当前目录：
+
+```bash
+claude plugin marketplace add .
+```
+
+或者从 GitHub 仓库安装：
+
 ```bash
 claude plugin marketplace add https://github.com/onlyliyj/cc-skills-config
 ```
