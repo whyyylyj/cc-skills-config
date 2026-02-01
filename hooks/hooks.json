@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs');const p=require('path');let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{const i=JSON.parse(d);const userPrompt=i.user_prompt||i.prompt||'';const hasChinese=/[\\u4e00-\\u9fa5]/.test(userPrompt);if(hasChinese){console.log('Language detected: Chinese');}else{console.log('Language detected: English');}}catch(e){console.log('Hook error:',e.message);}})\"",
+            "description": "Auto-detect language (Chinese/English) based on prompt content"
+          }
+        ],
+        "description": "Language detection hook for Chinese/English prompts"
+      }
+    ]
+  }
+}

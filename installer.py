@@ -273,6 +273,8 @@ class ConfigInstaller:
 
 def main():
     print("正在加载配置...")
+    print("\n💡 提示：你也可以通过 Claude Code Marketplace 安装此配置：")
+    print("   claude plugin marketplace add https://github.com/onlyliyj/cc-skills-config\n")
     try:
         installer = ConfigInstaller()
         installer.interactive_menu()

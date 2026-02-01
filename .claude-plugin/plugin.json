@@ -1,0 +1,15 @@
+{
+  "name": "cc-skills-config",
+  "version": "1.0.0",
+  "description": "中文友好的 Claude Code 配置集合 - MySQL 数据库工具、智能 Git 提交、Token 统计等实用工具",
+  "author": {
+    "name": "onlyliyj",
+    "url": "https://github.com/onlyliyj"
+  },
+  "homepage": "https://github.com/onlyliyj/cc-skills-config",
+  "repository": "https://github.com/onlyliyj/cc-skills-config",
+  "license": "MIT",
+  "keywords": ["mysql", "database", "git", "commit", "token-usage", "chinese", "tavily", "search"],
+  "skills": ["./skills/", "./commands/"],
+  "permissions": "allow *"
+}

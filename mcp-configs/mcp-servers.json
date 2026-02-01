@@ -1,0 +1,33 @@
+{
+  "mcpServers": {
+    "mysql": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-mysql"],
+      "env": {
+        "MYSQL_HOST": "${MYSQL_HOST:-localhost}",
+        "MYSQL_PORT": "${MYSQL_PORT:-3306}",
+        "MYSQL_USER": "${MYSQL_USER:-root}",
+        "MYSQL_PASSWORD": "${MYSQL_PASSWORD:-}",
+        "MYSQL_DATABASE": "${MYSQL_DATABASE:-}"
+      }
+    },
+    "tavily": {
+      "command": "npx",
+      "args": ["-y", "@tavily/mcp-server"],
+      "env": {
+        "TAVILY_API_KEY": "${TAVILY_API_KEY:-}"
+      }
+    },
+    "ccusage": {
+      "command": "npx",
+      "args": ["-y", "@ccusage/mcp@latest"],
+      "env": {
+        "CCUSAGE_MODE": "${CCUSAGE_MODE:-auto}",
+        "CCUSAGE_TRANSPORT": "${CCUSAGE_TRANSPORT:-stdio}",
+        "CCUSAGE_PORT": "${CCUSAGE_PORT:-8080}"
+      }
+    }
+  },
+  "_usage": "复制需要的 MCP 服务器到 ~/.claude.json 的 mcpServers 部分",
+  "_note": "或者使用 mysql-mcp-setup skill 自动配置"
+}

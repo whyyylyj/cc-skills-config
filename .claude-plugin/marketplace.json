@@ -1,0 +1,23 @@
+{
+  "name": "cc-skills-config",
+  "owner": {
+    "name": "onlyliyj",
+    "email": "your-email@example.com"
+  },
+  "metadata": {
+    "description": "中文友好的 Claude Code 配置集合",
+    "category": "productivity"
+  },
+  "plugins": [{
+    "name": "cc-skills-config",
+    "source": "./",
+    "description": "中文友好的 Claude Code 配置集合，包含 MySQL MCP 自动配置、智能 Git 提交、Token 统计分析、Tavily AI 搜索等实用工具",
+    "author": {"name": "onlyliyj"},
+    "homepage": "https://github.com/onlyliyj/cc-skills-config",
+    "repository": "https://github.com/onlyliyj/cc-skills-config",
+    "license": "MIT",
+    "keywords": ["mysql", "database", "git", "commit", "chinese", "tavily"],
+    "category": "productivity",
+    "tags": ["database", "git", "search", "chinese"]
+  }]
+}
